@@ -19,6 +19,7 @@ public class IndicatorBar extends View{
     
     private float mLeftX = 0;
     private float mRightX = 0;
+    private float mAvailableWidth = 0;
     
     private Paint mTrackPaint;
     
@@ -77,8 +78,12 @@ public class IndicatorBar extends View{
         Log.e("IndicateSeekBar", "onSizeChanged");
         mLeftX = getPaddingLeft();
         mThumbX = mLeftX;
+        Log.e("getLeft"+getLeft(), "getPaddingLeft()"+getPaddingLeft());
         Log.e("onSizeChanged.w"+w, "getRight()"+getRight());
-        mRightX = w - getPaddingRight();
+        mRightX = getRight() - getPaddingRight() - getPaddingLeft();
+        //mRightX = getRight();
+        Log.e("平均："+mRightX/mCount, mRightX/mCount*mCount+","+mRightX);
+        mAvailableWidth = w - getPaddingLeft() - getPaddingRight();
     }
     
     
@@ -112,16 +117,16 @@ public class IndicatorBar extends View{
     }
     
     private void moveThumb(float x){
-        float tickDistance = mRightX/mCount;//每一段距离
+        float tickDistance = mAvailableWidth/mCount;//每一段距离
         int pos = getNearestTickPos(x);
         float nearestTickPosX = mLeftX+tickDistance*pos;//粘近position
-        if (pos==mCount) nearestTickPosX -= getPaddingRight();
+        //if (pos==mCount) nearestTickPosX -= getPaddingRight();
         Log.e(mCount+"", getNearestTickPos(x)+"");
         setThumbX(nearestTickPosX);
     }
     
     int getNearestTickPos(float x){
-        float tickDistance = mRightX/mCount;
+        float tickDistance = mAvailableWidth/mCount;
         float originX = (x-mLeftX+tickDistance/2f)/tickDistance;
         //Log.e(mThumbX/tickDistance+"", (int)(mThumbX/tickDistance)+"");
         //Log.e(originX+"", (int)originX+"");
@@ -150,16 +155,19 @@ public class IndicatorBar extends View{
     }
     
     private void drawTrack(Canvas canvas) {
-        canvas.drawLine(mLeftX, getHeight()/2, mRightX, getHeight()/2, mTrackPaint);
+        canvas.drawLine(mLeftX, getHeight()/2, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
     private void drawTicks(Canvas canvas) {
         int count = mCount;
+        //int availableLength = getWidth() - getPaddingLeft() - getPaddingRight();
         for (int i = 0; i < count; i++) {
-            final float x = mRightX/count*i+mLeftX;
+            final float x = mAvailableWidth/count*i+mLeftX;
+            Log.e("x", x+"");
             canvas.drawLine(x, 0, x, getHeight()/2, mTrackPaint);
         }
-        canvas.drawLine(mRightX, 0, mRightX, getHeight()/2, mTrackPaint);
+        Log.e("mRightX", mRightX+"");
+        canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
     private void drawThumb(Canvas canvas) {
