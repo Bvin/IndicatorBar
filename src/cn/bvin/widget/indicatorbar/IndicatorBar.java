@@ -295,8 +295,8 @@ public class IndicatorBar extends View{
             String text = String.valueOf(i+1);
             Rect textRect = new Rect();
             paint.getTextBounds(text, 0, text.length(), textRect);
-            Log.e("Top"+getTop(), "PaddingTop:"+getPaddingTop());
-            canvas.drawText(text, x-textRect.width()/2, getTop()-textRect.height(), paint);
+            //Text.x = (Pos.x - Text.w/2),Text.y = getTop+Text.h/3
+            canvas.drawText(text, x-textRect.width()/2, getTop()+textRect.height()/3, paint);
         }
     }
     
