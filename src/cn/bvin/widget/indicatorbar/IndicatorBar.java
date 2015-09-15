@@ -25,17 +25,25 @@ public class IndicatorBar extends View{
     
     private Paint mTrackPaint;
     
-    private Bitmap mThumb;
+    private Bitmap mThumbNormal;
+    private Bitmap mThumbHightlight;
     private float mThumbX;
     private int mCount = 6;
-    private int mCurrentPosition = -1;
+    private int mCurrentPosition = 0;
+    
+    private int[] mSelectablePositions = {1,3,5};
     
     private OnIndicatorChangeListener mListener;
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         initTrackPaint();
-        mThumb = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
+        mThumbNormal = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
+        mThumbHightlight = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb_focus);
+    }
+    
+    public void setSelectablePositions(int[] selectablePositions){
+        mSelectablePositions = selectablePositions;
     }
     
     public void setOnIndicatorChangeListener(OnIndicatorChangeListener listener) {
@@ -166,7 +174,6 @@ public class IndicatorBar extends View{
     
     private void drawTicks(Canvas canvas) {
         int count = mCount;
-        //int availableLength = getWidth() - getPaddingLeft() - getPaddingRight();
         for (int i = 0; i < count; i++) {
             final float x = mAvailableWidth/count*i+mLeftX;
             canvas.drawLine(x, 0, x, getHeight()/2, mTrackPaint);
@@ -174,9 +181,21 @@ public class IndicatorBar extends View{
         canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
+    private boolean isCurrentPositionHighlight() {
+        if (mSelectablePositions!=null&&mSelectablePositions.length>0) {
+            for (int i : mSelectablePositions) {
+                if (mCurrentPosition+1==i) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private void drawThumb(Canvas canvas) {
-        if (mThumb!=null) {
-            canvas.drawBitmap(mThumb, mThumbX - mThumb.getWidth()/2, getHeight()/2-mThumb.getHeight()/2, null);
+        final Bitmap bitmap = isCurrentPositionHighlight() ? mThumbHightlight : mThumbNormal;
+        if (bitmap!=null) {
+            canvas.drawBitmap(bitmap, mThumbX - bitmap.getWidth()/2, getHeight()/2-bitmap.getHeight()/2, null);
         }else {
             canvas.drawCircle(mThumbX, getHeight()/2, 10, mTrackPaint);
         }
