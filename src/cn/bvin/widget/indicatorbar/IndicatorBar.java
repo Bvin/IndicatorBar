@@ -1,6 +1,9 @@
 package cn.bvin.widget.indicatorbar;
 
+import cn.bvin.widget.seekbarindicator.R;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -23,6 +26,7 @@ public class IndicatorBar extends View{
     
     private Paint mTrackPaint;
     
+    private Bitmap mThumb;
     private float mThumbX;
     private int mCount = 6;
     
@@ -30,6 +34,7 @@ public class IndicatorBar extends View{
         super(context, attrs);
         initTrackPaint();
         Log.e("IndicateSeekBar", "init");
+        mThumb = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
     }
 
     @Override
@@ -155,7 +160,7 @@ public class IndicatorBar extends View{
     }
     
     private void drawTrack(Canvas canvas) {
-        canvas.drawLine(mLeftX, getHeight()/2, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
+        canvas.drawLine(mLeftX-getPaddingLeft(), getHeight()/2, mLeftX+mAvailableWidth+getPaddingRight(), getHeight()/2, mTrackPaint);
     }
     
     private void drawTicks(Canvas canvas) {
@@ -171,7 +176,11 @@ public class IndicatorBar extends View{
     }
     
     private void drawThumb(Canvas canvas) {
-        canvas.drawCircle(mThumbX, getHeight()/2, 10, mTrackPaint);
+        if (mThumb!=null) {
+            canvas.drawBitmap(mThumb, mThumbX - mThumb.getWidth()/2, getHeight()/2-mThumb.getHeight()/2, null);
+        }else {
+            canvas.drawCircle(mThumbX, getHeight()/2, 10, mTrackPaint);
+        }
     }
     
     
