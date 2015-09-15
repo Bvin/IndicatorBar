@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -15,23 +16,24 @@ public class IndicatorBar extends View{
 
     private static final float DEFAULT_BAR_WEIGHT_PX = 2;
     private static final int DEFAULT_BAR_COLOR = Color.LTGRAY;
+    private static final int DEFAULT_POSITION_COUNT = 8;
+    private static final int DEFAULT_POSITION_CURRENT = 4;
     
     private int mDefaultWidth = 500;
     private int mDefaultHeight = 100;
     
-    private float mLeftX = 0;
-    private float mRightX = 0;
-    private float mAvailableWidth = 0;
+    private float mLeftX = 0;//x
+    private float mAvailableWidth = 0;//w
     
     private Paint mTrackPaint;
     
     private Bitmap mThumbNormal;
     private Bitmap mThumbHightlight;
     private float mThumbX;
-    private int mCount = 6;
-    private int mCurrentPosition = 0;
+    private int mCount = DEFAULT_POSITION_COUNT;
+    private int mCurrentPosition = DEFAULT_POSITION_CURRENT;
     
-    private int[] mSelectablePositions = {1,3,5};
+    private int[] mHightlightPositions = {1,3,5};
     
     private OnIndicatorChangeListener mListener;
     
@@ -42,14 +44,41 @@ public class IndicatorBar extends View{
         mThumbHightlight = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb_focus);
     }
     
-    public void setSelectablePositions(int[] selectablePositions){
-        mSelectablePositions = selectablePositions;
+    /**
+     * 设置高亮的position
+     * @param hightlightPositions must don't out of internal range that start at 0 and end at maxPosition. 
+     */
+    public void setHightlightPositions(int[] hightlightPositions){
+        mHightlightPositions = hightlightPositions;
     }
     
+    /**
+     * 设置切换监听器
+     * @param listener first time not be call
+     */
     public void setOnIndicatorChangeListener(OnIndicatorChangeListener listener) {
         this.mListener = listener;
     }
 
+    /**
+     * 设置当前的Position
+     * @param position if small than 0 or large than maxPosition will do nothing
+     */
+    public void setCurrentPosition(int position) {
+        if (position<0||position>mCount+1) {
+            return;
+        }
+        mCurrentPosition = position;
+    }
+    
+    /**
+     * 设置最大position
+     * @param maxPosition start at 1
+     */
+    public void setMaxPosition(int maxPosition) {
+        mCount = maxPosition-1;
+    }
+    
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -91,12 +120,15 @@ public class IndicatorBar extends View{
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mLeftX = getPaddingLeft();
-        mThumbX = mLeftX;
-        mRightX = getRight() - getPaddingRight() - getPaddingLeft();
-        //mRightX = getRight();
         mAvailableWidth = w - getPaddingLeft() - getPaddingRight();
+        if (mCurrentPosition!=0) {
+            mThumbX = xOfPostion(mCurrentPosition);
+            Log.e(mCurrentPosition+"", ""+mThumbX);
+        }else {
+            mThumbX = mLeftX;
+            Log.e("mCurrentPosition not be set", ""+mThumbX);
+        }
     }
-    
     
     
     @Override
@@ -127,17 +159,30 @@ public class IndicatorBar extends View{
         }
     }
     
+    /**
+     * 移动Thumb
+     * @param x screen x of the finger moved position
+     */
     private void moveThumb(float x){
-        float tickDistance = mAvailableWidth/mCount;//每一段距离
         int pos = getNearestTickPos(x);
-        float nearestTickPosX = mLeftX+tickDistance*pos;//粘近position
-        //if (pos==mCount) nearestTickPosX -= getPaddingRight();
-        setThumbX(nearestTickPosX);
+        float thumbX = xOfPostion(pos);
+        setThumbX(thumbX);
         if (mListener!=null) {
             if (mCurrentPosition!=pos) 
-                mListener.onIndicatorChanged(this, pos, nearestTickPosX);
+                mListener.onIndicatorChanged(this, pos, thumbX);
         }
         mCurrentPosition = pos;
+    }
+    
+    /**
+     * 根据position获取它所在的x坐标值
+     * @param position
+     * @return x坐标
+     */
+    float xOfPostion(int position){
+        float tickDistance = mAvailableWidth/mCount;
+        float nearestTickPosX = mLeftX+tickDistance*position;//粘近position
+        return nearestTickPosX;
     }
     
     int getNearestTickPos(float x){
@@ -163,6 +208,10 @@ public class IndicatorBar extends View{
         mTrackPaint.setAntiAlias(true);
     }
     
+    /**
+     * 设置thumb的横向位置并更新绘制
+     * @param x 横向坐标
+     */
     private void setThumbX(float x){
         mThumbX = x;
         invalidate();
@@ -182,8 +231,8 @@ public class IndicatorBar extends View{
     }
     
     private boolean isCurrentPositionHighlight() {
-        if (mSelectablePositions!=null&&mSelectablePositions.length>0) {
-            for (int i : mSelectablePositions) {
+        if (mHightlightPositions!=null&&mHightlightPositions.length>0) {
+            for (int i : mHightlightPositions) {
                 if (mCurrentPosition+1==i) {
                     return true;
                 }
