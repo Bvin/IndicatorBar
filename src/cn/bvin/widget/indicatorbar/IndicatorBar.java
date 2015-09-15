@@ -1,14 +1,18 @@
 package cn.bvin.widget.indicatorbar;
 
 import cn.bvin.widget.seekbarindicator.R;
+import android.R.integer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -18,6 +22,10 @@ public class IndicatorBar extends View{
     private static final int DEFAULT_BAR_COLOR = Color.LTGRAY;
     private static final int DEFAULT_POSITION_COUNT = 8;
     private static final int DEFAULT_POSITION_CURRENT = 4;
+    private static final int DEFAULT_INDICATOR_TEXT_SIZE = 12;
+    private static final int DEFAULT_CUR_HIGHLIGHT_INDICATOR_TEXT_SIZE = 17;
+    private static final int DEFAULT_INDICATOR_TEXT_COLOR = DEFAULT_BAR_COLOR;
+    private static final int DEFAULT_HIGHLIGHT_INDICATOR_TEXT_COLOR = Color.YELLOW;
     
     private int mDefaultWidth = 500;
     private int mDefaultHeight = 100;
@@ -26,22 +34,56 @@ public class IndicatorBar extends View{
     private float mAvailableWidth = 0;//w
     
     private Paint mTrackPaint;
+    private Paint mNormalIndicatorPaint;
+    private Paint mHighlightIndicatorPaint;
+    private Paint mCurHighlightIndicatorPaint;
+    
+    private int mIndicatorTextColor = DEFAULT_INDICATOR_TEXT_COLOR;//指示器文字颜色
+    private int mHighlightIndicatorTextColor = DEFAULT_HIGHLIGHT_INDICATOR_TEXT_COLOR;//高亮指示器文字颜色
+    private float mIndicatorTextSize = DEFAULT_INDICATOR_TEXT_SIZE;//指示器文字大小
+    private float mCurHighlightIndicatorTextSize = DEFAULT_CUR_HIGHLIGHT_INDICATOR_TEXT_SIZE;//当前高亮指示器文字大小
     
     private Bitmap mThumbNormal;
-    private Bitmap mThumbHightlight;
+    private Bitmap mThumbHighlight;
     private float mThumbX;
     private int mCount = DEFAULT_POSITION_COUNT;
     private int mCurrentPosition = DEFAULT_POSITION_CURRENT;
     
-    private int[] mHightlightPositions = {1,3,5};
+    private int[] mHighlightPositions = {1,3,5};
     
     private OnIndicatorChangeListener mListener;
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initTrackPaint();
+        initPaints();
         mThumbNormal = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
-        mThumbHightlight = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb_focus);
+        mThumbHighlight = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb_focus);
+    }
+    
+    void initPaints(){
+        mTrackPaint = new Paint();
+        mTrackPaint.setColor(DEFAULT_BAR_COLOR);
+        mTrackPaint.setStrokeWidth(DEFAULT_BAR_WEIGHT_PX);
+        mTrackPaint.setAntiAlias(true);
+        
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        
+        mNormalIndicatorPaint = new Paint();
+        mNormalIndicatorPaint.setColor(mIndicatorTextColor);
+        mIndicatorTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mIndicatorTextSize, dm);
+        mNormalIndicatorPaint.setTextSize(mIndicatorTextSize);
+        mNormalIndicatorPaint.setAntiAlias(true);
+        
+        mHighlightIndicatorPaint = new Paint();
+        mHighlightIndicatorPaint.setColor(mHighlightIndicatorTextColor);
+        mHighlightIndicatorPaint.setTextSize(mIndicatorTextSize);
+        mHighlightIndicatorPaint.setAntiAlias(true);
+        
+        mCurHighlightIndicatorPaint = new Paint();
+        mCurHighlightIndicatorPaint.setColor(mHighlightIndicatorTextColor);
+        mCurHighlightIndicatorTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mCurHighlightIndicatorTextSize, dm);
+        mCurHighlightIndicatorPaint.setTextSize(mCurHighlightIndicatorTextSize);
+        mCurHighlightIndicatorPaint.setAntiAlias(true);
     }
     
     /**
@@ -49,7 +91,7 @@ public class IndicatorBar extends View{
      * @param hightlightPositions must don't out of internal range that start at 0 and end at maxPosition. 
      */
     public void setHightlightPositions(int[] hightlightPositions){
-        mHightlightPositions = hightlightPositions;
+        mHighlightPositions = hightlightPositions;
     }
     
     /**
@@ -100,6 +142,16 @@ public class IndicatorBar extends View{
             width = mDefaultWidth;
         }
 
+        int thumbHeight = 0;//默认为0
+        if (mThumbNormal!=null&&mThumbHighlight!=null) {
+            thumbHeight =  Math.max(mThumbNormal.getHeight(), mThumbHighlight.getHeight());
+        }else if (mThumbNormal!=null) {
+            thumbHeight = mThumbNormal.getHeight();
+        }else if (mThumbHighlight!=null) {
+            thumbHeight = mThumbHighlight.getHeight();
+        }
+        thumbHeight = thumbHeight*3;//三倍thumb高度
+        
         // The RangeBar height should be as small as possible.
         if (measureHeightMode == MeasureSpec.AT_MOST) {
             height = Math.min(mDefaultHeight, measureHeight);
@@ -108,6 +160,7 @@ public class IndicatorBar extends View{
         } else {
             height = mDefaultHeight;
         }
+        height = thumbHeight>height?thumbHeight:height;
         setMeasuredDimension(width, height);
     }
     
@@ -198,15 +251,10 @@ public class IndicatorBar extends View{
         super.onDraw(canvas);
         drawTrack(canvas);
         drawTicks(canvas);
+        drawIndicatorTexts(canvas);
         drawThumb(canvas);
     }
     
-    void initTrackPaint(){
-        mTrackPaint = new Paint();
-        mTrackPaint.setColor(DEFAULT_BAR_COLOR);
-        mTrackPaint.setStrokeWidth(DEFAULT_BAR_WEIGHT_PX);
-        mTrackPaint.setAntiAlias(true);
-    }
     
     /**
      * 设置thumb的横向位置并更新绘制
@@ -230,10 +278,32 @@ public class IndicatorBar extends View{
         canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
-    private boolean isCurrentPositionHighlight() {
-        if (mHightlightPositions!=null&&mHightlightPositions.length>0) {
-            for (int i : mHightlightPositions) {
-                if (mCurrentPosition+1==i) {
+    private void drawIndicatorTexts(Canvas canvas) {
+        int count = mCount;
+        for (int i = 0; i < count; i++) {
+            final float x = mAvailableWidth/count*i+mLeftX;
+            Paint paint;
+            if (isPositionOnHighlight(i)) {//当前选中的position
+                if (i == mCurrentPosition) {
+                    paint = mCurHighlightIndicatorPaint;
+                }else {
+                    paint = mHighlightIndicatorPaint;
+                }
+            } else {//没选中的position
+                paint = mNormalIndicatorPaint;
+            }
+            String text = String.valueOf(i+1);
+            Rect textRect = new Rect();
+            paint.getTextBounds(text, 0, text.length(), textRect);
+            Log.e("Top"+getTop(), "PaddingTop:"+getPaddingTop());
+            canvas.drawText(text, x-textRect.width()/2, getTop()-textRect.height(), paint);
+        }
+    }
+    
+    private boolean isPositionOnHighlight(int position) {
+        if (mHighlightPositions!=null&&mHighlightPositions.length>0) {
+            for (int i : mHighlightPositions) {
+                if (position+1==i) {
                     return true;
                 }
             }
@@ -241,8 +311,12 @@ public class IndicatorBar extends View{
         return false;
     }
     
+    private boolean isCurrentPositionHighlight() {
+        return isPositionOnHighlight(mCurrentPosition);
+    }
+    
     private void drawThumb(Canvas canvas) {
-        final Bitmap bitmap = isCurrentPositionHighlight() ? mThumbHightlight : mThumbNormal;
+        final Bitmap bitmap = isCurrentPositionHighlight() ? mThumbHighlight : mThumbNormal;
         if (bitmap!=null) {
             canvas.drawBitmap(bitmap, mThumbX - bitmap.getWidth()/2, getHeight()/2-bitmap.getHeight()/2, null);
         }else {
