@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -29,18 +28,23 @@ public class IndicatorBar extends View{
     private Bitmap mThumb;
     private float mThumbX;
     private int mCount = 6;
+    private int mCurrentPosition = -1;
+    
+    private OnIndicatorChangeListener mListener;
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         initTrackPaint();
-        Log.e("IndicateSeekBar", "init");
         mThumb = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
+    }
+    
+    public void setOnIndicatorChangeListener(OnIndicatorChangeListener listener) {
+        this.mListener = listener;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.e("IndicateSeekBar", "onMeasure");
         int width;
         int height;
         
@@ -67,27 +71,21 @@ public class IndicatorBar extends View{
         } else {
             height = mDefaultHeight;
         }
-        Log.e("onMeasure", ""+width);
         setMeasuredDimension(width, height);
     }
     
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        Log.e("IndicateSeekBar", "onLayout");
     }
     
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.e("IndicateSeekBar", "onSizeChanged");
         mLeftX = getPaddingLeft();
         mThumbX = mLeftX;
-        Log.e("getLeft"+getLeft(), "getPaddingLeft()"+getPaddingLeft());
-        Log.e("onSizeChanged.w"+w, "getRight()"+getRight());
         mRightX = getRight() - getPaddingRight() - getPaddingLeft();
         //mRightX = getRight();
-        Log.e("平均："+mRightX/mCount, mRightX/mCount*mCount+","+mRightX);
         mAvailableWidth = w - getPaddingLeft() - getPaddingRight();
     }
     
@@ -126,8 +124,12 @@ public class IndicatorBar extends View{
         int pos = getNearestTickPos(x);
         float nearestTickPosX = mLeftX+tickDistance*pos;//粘近position
         //if (pos==mCount) nearestTickPosX -= getPaddingRight();
-        Log.e(mCount+"", getNearestTickPos(x)+"");
         setThumbX(nearestTickPosX);
+        if (mListener!=null) {
+            if (mCurrentPosition!=pos) 
+                mListener.onIndicatorChanged(this, pos, nearestTickPosX);
+        }
+        mCurrentPosition = pos;
     }
     
     int getNearestTickPos(float x){
@@ -141,7 +143,6 @@ public class IndicatorBar extends View{
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.e("IndicateSeekBar", "onDraw");
         drawTrack(canvas);
         drawTicks(canvas);
         drawThumb(canvas);
@@ -168,10 +169,8 @@ public class IndicatorBar extends View{
         //int availableLength = getWidth() - getPaddingLeft() - getPaddingRight();
         for (int i = 0; i < count; i++) {
             final float x = mAvailableWidth/count*i+mLeftX;
-            Log.e("x", x+"");
             canvas.drawLine(x, 0, x, getHeight()/2, mTrackPaint);
         }
-        Log.e("mRightX", mRightX+"");
         canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
@@ -183,5 +182,7 @@ public class IndicatorBar extends View{
         }
     }
     
-    
+    public interface OnIndicatorChangeListener{
+        public void onIndicatorChanged(IndicatorBar indicatorBar,int position,float xAtPosition);
+    }
 }
