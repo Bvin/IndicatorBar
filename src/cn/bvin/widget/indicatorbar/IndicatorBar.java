@@ -1,19 +1,18 @@
 package cn.bvin.widget.indicatorbar;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import cn.bvin.widget.seekbarindicator.R;
 import android.R.integer;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -39,6 +38,8 @@ public class IndicatorBar extends View{
     private float mLeftX = 0;//x
     private float mAvailableWidth = 0;//w
     
+    private float mTrackThickness = DEFAULT_BAR_WEIGHT_PX;
+    
     private Paint mTrackPaint;
     private Paint mNormalIndicatorPaint;
     private Paint mHighlightIndicatorPaint;
@@ -54,33 +55,51 @@ public class IndicatorBar extends View{
     private float mThumbX;
     private int mCount = DEFAULT_POSITION_COUNT;
     private int mCurrentPosition = DEFAULT_POSITION_CURRENT;
-    private int mIndicatorOffset = 1;//indicator和position的偏差
-    private int[] mHighlightIndicators = {1,3,5};
+    private int mIndicatorOffset = 0;//indicator和position的偏差
+    private int[] mHighlightIndicators;
     
     private OnIndicatorChangeListener mListener;
     
     private boolean showTicks;//是否需要显示刻度
-    private String mLowlightSelectedText = "不可选";//非高亮选中的indicator需要显示的文字
-    private String mMaxHighlightSelectedText = "Max";//高亮indicator中最大值选中时的文字
+    private String mLowlightSelectedText;//非高亮选中的indicator需要显示的文字
+    private String mMaxHighlightSelectedText;//高亮indicator中最大值选中时的文字
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
+        parseAttrs(context, attrs);
         initPaints();
-        mThumbNormal = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb);
-        mThumbHighlight = BitmapFactory.decodeResource(getResources(), R.drawable.range_seek_thumb_focus);
+    }
+    
+    private void parseAttrs(Context context, AttributeSet attrs) {
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.IndicatorBar, 0, 0);
+        //Track厚度
+        mTrackThickness = ta.getDimension(R.styleable.IndicatorBar_trackThickness, DEFAULT_BAR_WEIGHT_PX);
+        mCount = ta.getInteger(R.styleable.IndicatorBar_maxPosition, 0);
+        mCurrentPosition = ta.getInteger(R.styleable.IndicatorBar_currentPosition, 0);
+        mIndicatorTextColor = ta.getColor(R.styleable.IndicatorBar_themeColor, 0);
+        mHighlightIndicatorTextColor = ta.getColor(R.styleable.IndicatorBar_highlightColor, 0);
+        int mThumbNormalResId = ta.getResourceId(R.styleable.IndicatorBar_thumb, 0);
+        mThumbNormal = BitmapFactory.decodeResource(getResources(), mThumbNormalResId);
+        int mThumbHighlightResId = ta.getResourceId(R.styleable.IndicatorBar_highlightThumb, 0);
+        mThumbHighlight = BitmapFactory.decodeResource(getResources(), mThumbHighlightResId);
+        mIndicatorTextSize = ta.getDimension(R.styleable.IndicatorBar_textSize, 0);
+        mCurHighlightIndicatorTextSize = ta.getDimension(R.styleable.IndicatorBar_highlightTextSize, 0);
+        mIndicatorOffset = ta.getInteger(R.styleable.IndicatorBar_indicatorOffset, 0);
+        mLowlightSelectedText = ta.getString(R.styleable.IndicatorBar_lowlightSelectedText);
+        mMaxHighlightSelectedText = ta.getString(R.styleable.IndicatorBar_maxHighlightSelectedText);
+        ta.recycle();
     }
     
     void initPaints(){
         mTrackPaint = new Paint();
         mTrackPaint.setColor(DEFAULT_BAR_COLOR);
-        mTrackPaint.setStrokeWidth(DEFAULT_BAR_WEIGHT_PX);
+        mTrackPaint.setStrokeWidth(mTrackThickness);
         mTrackPaint.setAntiAlias(true);
         
         DisplayMetrics dm = getResources().getDisplayMetrics();
         
         mNormalIndicatorPaint = new Paint();
         mNormalIndicatorPaint.setColor(mIndicatorTextColor);
-        mIndicatorTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mIndicatorTextSize, dm);
         mNormalIndicatorPaint.setTextSize(mIndicatorTextSize);
         mNormalIndicatorPaint.setAntiAlias(true);
         
@@ -91,7 +110,6 @@ public class IndicatorBar extends View{
         
         mCurHighlightIndicatorPaint = new Paint();
         mCurHighlightIndicatorPaint.setColor(mHighlightIndicatorTextColor);
-        mCurHighlightIndicatorTextSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, mCurHighlightIndicatorTextSize, dm);
         mCurHighlightIndicatorPaint.setTextSize(mCurHighlightIndicatorTextSize);
         mCurHighlightIndicatorPaint.setAntiAlias(true);
     }
@@ -117,12 +135,15 @@ public class IndicatorBar extends View{
     }
     
     /**
-     * 设置文字大小
+     * 设置文字大小（单位是sp）
      * @param normalTextSize 普通文字大小
      * @param highlightTextSize 高亮文字大小
      */
     public void setTextSize(int normalTextSize,int highlightTextSize) {
-        
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int unit = TypedValue.COMPLEX_UNIT_SP;
+        mIndicatorTextSize = TypedValue.applyDimension(unit, normalTextSize, dm);
+        mCurHighlightIndicatorTextSize = TypedValue.applyDimension(unit, highlightTextSize, dm);
     }
     
     /**
