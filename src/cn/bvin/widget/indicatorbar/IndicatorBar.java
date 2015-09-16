@@ -61,7 +61,7 @@ public class IndicatorBar extends View{
     
     private boolean showTicks;//是否需要显示刻度
     private String mLowlightSelectedText = "不可选";//非高亮选中的indicator需要显示的文字
-    private String mMaxHighlightSelectedText = "最大值";//高亮indicator中最大值选中时的文字
+    private String mMaxHighlightSelectedText = "Max";//高亮indicator中最大值选中时的文字
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -97,6 +97,45 @@ public class IndicatorBar extends View{
     }
     
     /**
+     * 设置Thumb
+     * @param normalThumbResId
+     * @param highlightThumbResId
+     */
+    public void setThumbs(int normalThumbResId,int highlightThumbResId) {
+        mThumbNormal = BitmapFactory.decodeResource(getResources(),normalThumbResId);
+        mThumbHighlight = BitmapFactory.decodeResource(getResources(),highlightThumbResId);
+    }
+    
+    /**
+     * 设置主题颜色
+     * @param normalColorResId 
+     * @param highlightColorResId
+     */
+    public void setThemeColors(int normalColorResId,int highlightColorResId) {
+        mIndicatorTextColor = getResources().getColor(normalColorResId,null);
+        mHighlightIndicatorTextColor = getResources().getColor(highlightColorResId,null);
+    }
+    
+    /**
+     * 设置文字大小
+     * @param normalTextSize 普通文字大小
+     * @param highlightTextSize 高亮文字大小
+     */
+    public void setTextSize(int normalTextSize,int highlightTextSize) {
+        
+    }
+    
+    /**
+     * 
+     * @param normalSelectedText 普通模式下选中的文字
+     * @param maxHighlightSelectedText 高亮选中的最大值显示文字
+     */
+    public void setDescUnderThumb(String normalSelectedText,String maxHighlightSelectedText) {
+        mLowlightSelectedText  = normalSelectedText;
+        mMaxHighlightSelectedText = maxHighlightSelectedText;
+    }
+    
+    /**
      * 设置高亮的Indicator，默认不排序
      * @param hightlightIndicators 
      */
@@ -112,6 +151,14 @@ public class IndicatorBar extends View{
     public void setHightlightIndicators(int[] hightlightIndicators,boolean sort) {
         mHighlightIndicators = hightlightIndicators;
         if (sort) Arrays.sort(mHighlightIndicators);
+    }
+    
+    /**
+     * 是否绘制刻度
+     * @param isShowTicks
+     */
+    public void setShowTicks(boolean isShowTicks) {
+        showTicks = isShowTicks;
     }
     
     /**
