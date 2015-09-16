@@ -1,8 +1,10 @@
 package cn.bvin.widget.indicatorbar;
 
+import cn.bvin.widget.indicatorbar.IndicatorBar.OnIndicatorChangeListener;
 import cn.bvin.widget.seekbarindicator.R;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -12,6 +14,15 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        IndicatorBar ib = (IndicatorBar) findViewById(R.id.indicatorBar1);
+        ib.setOnIndicatorChangeListener(new OnIndicatorChangeListener() {
+            
+            @Override
+            public void onIndicatorChanged(IndicatorBar indicatorBar, int position, float xAtPosition) {
+                Log.i("position"+position, "xAtPosition"+xAtPosition);
+            }
+        });
+        ib.setHightlightIndicators(new int[]{3,4,5});
     }
 
     @Override
