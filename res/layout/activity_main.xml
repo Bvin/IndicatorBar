@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:ib="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -9,7 +10,20 @@
     <cn.bvin.widget.indicatorbar.IndicatorBar
         android:id="@+id/indicatorBar1"
         android:layout_margin="5dp"
-        android:padding="10dp"
+        android:padding="12dp"
+        android:background="#777"
+        ib:trackThickness = "3px"
+        ib:themeColor = "#222"
+        ib:highlightColor = "#f23"
+        ib:textSize = "12sp"
+        ib:highlightTextSize = "15sp"
+        ib:thumb = "@drawable/range_seek_thumb"
+        ib:highlightThumb = "@drawable/range_seek_thumb_focus"
+        ib:currentPosition = "2"
+        ib:maxPosition = "8"
+        ib:indicatorOffset = "3"
+        ib:lowlightSelectedText = "不可选"
+        ib:maxHighlightSelectedText = "最大"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
