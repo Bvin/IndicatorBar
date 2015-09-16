@@ -273,7 +273,7 @@ public class IndicatorBar extends View{
         int count = mCount;
         for (int i = 0; i <= count; i++) {
             final float x = mAvailableWidth/count*i+mLeftX;
-            canvas.drawLine(x, 0, x, getHeight()/2, mTrackPaint);
+            canvas.drawLine(x, getTop()+getPaddingTop(), x, getHeight()/2, mTrackPaint);
         }
         //canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
