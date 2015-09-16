@@ -64,11 +64,22 @@ public class IndicatorBar extends View{
     private String mLowlightSelectedText;//非高亮选中的indicator需要显示的文字
     private String mMaxHighlightSelectedText;//高亮indicator中最大值选中时的文字
     
+    public IndicatorBar(Context context) {
+        super(context);
+    }
+
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         parseAttrs(context, attrs);
         initPaints();
     }
+
+    public IndicatorBar(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        parseAttrs(context, attrs);
+        initPaints();
+    }
+
     
     private void parseAttrs(Context context, AttributeSet attrs) {
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.IndicatorBar, 0, 0);
