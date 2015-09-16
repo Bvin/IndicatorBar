@@ -53,6 +53,8 @@ public class IndicatorBar extends View{
     
     private OnIndicatorChangeListener mListener;
     
+    private boolean showTicks;//是否需要显示刻度
+    
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         initPaints();
@@ -250,7 +252,7 @@ public class IndicatorBar extends View{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         drawTrack(canvas);
-        drawTicks(canvas);
+        if(showTicks)drawTicks(canvas);
         drawIndicatorTexts(canvas);
         drawThumb(canvas);
     }
