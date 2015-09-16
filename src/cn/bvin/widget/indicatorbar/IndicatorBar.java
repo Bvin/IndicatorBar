@@ -14,6 +14,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -59,6 +60,8 @@ public class IndicatorBar extends View{
     private OnIndicatorChangeListener mListener;
     
     private boolean showTicks;//是否需要显示刻度
+    private String mLowlightSelectedText = "不可选";//非高亮选中的indicator需要显示的文字
+    private String mMaxHighlightSelectedText = "最大值";//高亮indicator中最大值选中时的文字
     
     public IndicatorBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -311,18 +314,18 @@ public class IndicatorBar extends View{
             if (isPositionOnHighlight(i)) {//当前选中的position
                 if (i == mCurrentPosition) {
                     paint = mCurHighlightIndicatorPaint;
-                    if (isHighlightMaxPosition(i)) {
-                        //绘制最大值
-                        drawTextOnCenterX(canvas, "Max", x, getHeight(), paint);
+                    //高亮的indicator被选中时绘制
+                    if (!TextUtils.isEmpty(mMaxHighlightSelectedText)&&isHighlightMaxPosition(i)) {
+                        drawTextUnderThumb(canvas, mMaxHighlightSelectedText, x, paint);
                     }
                 }else {
                     paint = mHighlightIndicatorPaint;
                 }
             } else {//没选中的position
                 paint = mNormalIndicatorPaint;
-                if (i == mCurrentPosition) {
-                    //绘制暂无权限
-                    drawTextOnCenterX(canvas, "暂无权限", x, getHeight(), paint);
+                //非高亮的indicator被选中时绘制
+                if (!TextUtils.isEmpty(mLowlightSelectedText)&&i == mCurrentPosition) {
+                    drawTextUnderThumb(canvas, mLowlightSelectedText, x, paint);
                 }
             }
             String text = String.valueOf(i+mIndicatorOffset);
@@ -346,6 +349,17 @@ public class IndicatorBar extends View{
             return position+mIndicatorOffset == mHighlightIndicators[mHighlightIndicators.length-1];
         }
         return false;
+    }
+    
+    /**
+     * 在Thumb下绘制文字
+     * @param canvas
+     * @param text
+     * @param x
+     * @param paint
+     */
+    private void drawTextUnderThumb(Canvas canvas,String text, float x,Paint paint) {
+        drawTextOnCenterX(canvas, text, x, getBottom() - getPaddingBottom() - getTop(), paint);
     }
     
     /**
