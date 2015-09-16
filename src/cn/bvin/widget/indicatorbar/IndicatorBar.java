@@ -1,5 +1,10 @@
 package cn.bvin.widget.indicatorbar;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import cn.bvin.widget.seekbarindicator.R;
 import android.R.integer;
 import android.content.Context;
@@ -48,8 +53,8 @@ public class IndicatorBar extends View{
     private float mThumbX;
     private int mCount = DEFAULT_POSITION_COUNT;
     private int mCurrentPosition = DEFAULT_POSITION_CURRENT;
-    
-    private int[] mHighlightPositions = {1,3,5};
+    private int mIndicatorOffset = 1;//indicator和position的偏差
+    private int[] mHighlightIndicators = {1,3,5};
     
     private OnIndicatorChangeListener mListener;
     
@@ -89,11 +94,21 @@ public class IndicatorBar extends View{
     }
     
     /**
-     * 设置高亮的position
-     * @param hightlightPositions must don't out of internal range that start at 0 and end at maxPosition. 
+     * 设置高亮的Indicator，默认不排序
+     * @param hightlightIndicators 
      */
-    public void setHightlightPositions(int[] hightlightPositions){
-        mHighlightPositions = hightlightPositions;
+    public void setHightlightIndicators(int[] hightlightIndicators){
+        setHightlightIndicators(hightlightIndicators, false);
+    }
+    
+    /**
+     * 设置高亮的Indicator集合
+     * @param hightlightIndicators
+     * @param sort 是否排序
+     */
+    public void setHightlightIndicators(int[] hightlightIndicators,boolean sort) {
+        mHighlightIndicators = hightlightIndicators;
+        if (sort) Arrays.sort(mHighlightIndicators);
     }
     
     /**
@@ -116,11 +131,19 @@ public class IndicatorBar extends View{
     }
     
     /**
-     * 设置最大position
-     * @param maxPosition start at 1
+     * 设置当前Indicator
+     * @param indicator
      */
-    public void setMaxPosition(int maxPosition) {
-        mCount = maxPosition-1;
+    public void setCurrentIndicator(int indicator) {
+        setCurrentPosition(indicator-mIndicatorOffset);
+    }
+    
+    /**
+     * 设置Indicator最大值
+     * @param max 
+     */
+    public void setMaxIndicator(int max) {
+        mCount = max-mIndicatorOffset;
     }
     
     @Override
@@ -288,24 +311,61 @@ public class IndicatorBar extends View{
             if (isPositionOnHighlight(i)) {//当前选中的position
                 if (i == mCurrentPosition) {
                     paint = mCurHighlightIndicatorPaint;
+                    if (isHighlightMaxPosition(i)) {
+                        //绘制最大值
+                        drawTextOnCenterX(canvas, "Max", x, getHeight(), paint);
+                    }
                 }else {
                     paint = mHighlightIndicatorPaint;
                 }
             } else {//没选中的position
                 paint = mNormalIndicatorPaint;
+                if (i == mCurrentPosition) {
+                    //绘制暂无权限
+                    drawTextOnCenterX(canvas, "暂无权限", x, getHeight(), paint);
+                }
             }
-            String text = String.valueOf(i+1);
+            String text = String.valueOf(i+mIndicatorOffset);
             Rect textRect = new Rect();
             paint.getTextBounds(text, 0, text.length(), textRect);
             //Text.x = (Pos.x - Text.w/2),Text.y = getTop+Text.h/3
+            //绘制track上方的indicator文字
             canvas.drawText(text, x-textRect.width()/2, getTop()+textRect.height()/3, paint);
         }
     }
     
+    /**
+     * 是否是最大的position
+     * @param position start with 0
+     * @return true if equals
+     */
+    private boolean isHighlightMaxPosition(int position) {
+        if (mHighlightIndicators!=null&&mHighlightIndicators.length>0) {
+            //position参数是从0计数的，mHighlightPositions是外部设置的从0开始的
+            //mHighlightPositions必须是有序的，否则就不准了
+            return position+mIndicatorOffset == mHighlightIndicators[mHighlightIndicators.length-1];
+        }
+        return false;
+    }
+    
+    /**
+     * 绘制Text,Text横向以x坐标居中
+     * @param canvas The canvas on which the background will be drawn
+     * @param text The text to be drawn
+     * @param x TextX坐标
+     * @param y TextY坐标
+     * @param paint The paint used for the text (e.g. color, size, style)
+     */
+    private void drawTextOnCenterX(Canvas canvas,String text, float x, float y, Paint paint) {
+        Rect textRect = new Rect();
+        paint.getTextBounds(text, 0, text.length(), textRect);
+        canvas.drawText(text, x-textRect.width()/2, y, paint);
+    }
+    
     private boolean isPositionOnHighlight(int position) {
-        if (mHighlightPositions!=null&&mHighlightPositions.length>0) {
-            for (int i : mHighlightPositions) {
-                if (position+1==i) {
+        if (mHighlightIndicators!=null&&mHighlightIndicators.length>0) {
+            for (int i : mHighlightIndicators) {
+                if (position+mIndicatorOffset==i) {
                     return true;
                 }
             }
