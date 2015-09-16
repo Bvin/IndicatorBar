@@ -271,16 +271,16 @@ public class IndicatorBar extends View{
     
     private void drawTicks(Canvas canvas) {
         int count = mCount;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i <= count; i++) {
             final float x = mAvailableWidth/count*i+mLeftX;
             canvas.drawLine(x, 0, x, getHeight()/2, mTrackPaint);
         }
-        canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
+        //canvas.drawLine(mLeftX+mAvailableWidth, 0, mLeftX+mAvailableWidth, getHeight()/2, mTrackPaint);
     }
     
     private void drawIndicatorTexts(Canvas canvas) {
         int count = mCount;
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i <= count; i++) {
             final float x = mAvailableWidth/count*i+mLeftX;
             Paint paint;
             if (isPositionOnHighlight(i)) {//当前选中的position
