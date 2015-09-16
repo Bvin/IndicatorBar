@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="IndicatorBar">
+        <attr name="trackThickness" format="dimension"/>
+        <attr name="themeColor" format="reference|color"/>
+        <attr name="highlightColor" format="reference|color"/>
+        <attr name="thumb" format="reference" />
+        <attr name="highlightThumb" format="reference" />
+        <attr name="textSize" format="dimension" />
+        <attr name="highlightTextSize" format="dimension" />
+        <attr name="currentPosition" format="integer" />
+        <attr name="maxPosition" format="integer" />
+        <attr name="indicatorOffset" format="integer" />
+        <attr name="lowlightSelectedText" format="string" />
+        <attr name="maxHighlightSelectedText" format="string" />
+    </declare-styleable>
+</resources>
