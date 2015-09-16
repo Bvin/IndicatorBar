@@ -7,6 +7,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.ToggleButton;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -14,7 +20,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        IndicatorBar ib = (IndicatorBar) findViewById(R.id.indicatorBar1);
+        final IndicatorBar ib = (IndicatorBar) findViewById(R.id.indicatorBar1);
         ib.setOnIndicatorChangeListener(new OnIndicatorChangeListener() {
             
             @Override
@@ -23,6 +29,37 @@ public class MainActivity extends ActionBarActivity {
             }
         });
         ib.setHightlightIndicators(new int[]{3,4,5});
+        SeekBar sb = (SeekBar) findViewById(R.id.seekBar1);
+        sb.setMax(20);
+        sb.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                
+            }
+            
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                
+            }
+            
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO Auto-generated method stub
+                ib.setMaxIndicator(progress);
+                ib.invalidate();
+            }
+        });
+        ToggleButton bt = (ToggleButton) findViewById(R.id.toggleButton1);
+        bt.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                ib.setShowTicks(isChecked);
+                ib.invalidate();
+            }
+        });
     }
 
     @Override
