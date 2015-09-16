@@ -13,5 +13,6 @@
         <attr name="indicatorOffset" format="integer" />
         <attr name="lowlightSelectedText" format="string" />
         <attr name="maxHighlightSelectedText" format="string" />
+        <attr name="showTicks" format="boolean" />
     </declare-styleable>
 </resources>

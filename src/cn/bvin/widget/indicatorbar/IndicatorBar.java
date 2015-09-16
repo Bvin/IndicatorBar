@@ -98,6 +98,7 @@ public class IndicatorBar extends View{
         mIndicatorOffset = ta.getInteger(R.styleable.IndicatorBar_indicatorOffset, 0);
         mLowlightSelectedText = ta.getString(R.styleable.IndicatorBar_lowlightSelectedText);
         mMaxHighlightSelectedText = ta.getString(R.styleable.IndicatorBar_maxHighlightSelectedText);
+        showTicks = ta.getBoolean(R.styleable.IndicatorBar_showTicks, false);
         ta.recycle();
     }
     
